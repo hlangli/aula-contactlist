@@ -111,6 +111,10 @@ public class Main {
 				.collect(Collectors.joining(","));
 	}
 	
+	private static boolean isAddressValid(Address address) {
+		return address != null && !(!address.getStreet().contains(" ") && address.getPostalCode() == null && address.getPostalDistrict() == null);
+	}
+	
 	private static String toVcard(String classname, Guardian guardian, Child child) {
 		JavaType mapType = TypeFactory.defaultInstance().constructMapLikeType(HashMap.class, String.class, Object.class);
 		Map<String, Object> a = json.convertValue(guardian.getAddress(), mapType);
@@ -121,13 +125,11 @@ public class Main {
 				entry("FN", s("%s %s", guardian.getFirstName(), guardian.getLastName())),
 				entry("N", s("%s;%s", guardian.getLastName(), guardian.getFirstName())),
 				entry("EMAIL;TYPE=INTERNET;TYPE=HOME", guardian.getEmail()),
-				entry("item1.EMAIL;TYPE=INTERNET", guardian.getAulaEmail()),
-				entry("item1.X-ABLabel", "Aula"),
 				entry("TEL;TYPE=HOME", guardian.getHomePhoneNumber()),
 				entry("TEL;TYPE=WORK", guardian.getWorkPhoneNumber()),
 				entry("TEL;TYPE=CELL", guardian.getMobilePhoneNumber()),
-				entry("ADR;TYPE=HOME", subst(";;${street};${postalDistrict};;${postalCode};DK;${street}\\n${postalCode} ${postalDistrict}\\nDK", a)),
-				entry("item4.TITLE", s("%s til %s", guardian.getRelation(), child.getFirstName())),
+				entry("ADR;TYPE=HOME", isAddressValid(guardian.getAddress()) ? subst(";;${street};${postalDistrict};;${postalCode};DK;${street}\\n${postalCode} ${postalDistrict}\\nDK", a) : null),
+				entry("TITLE", s("%s til %s", guardian.getRelation(), child.getFirstName())),
 				entry("X-ABRELATEDNAMES;TYPE=CHILD", s("%s %s", child.getFirstName(), child.getLastName())),
 				entry("NOTE", s("Forældre i %S", classname)),
 				entry("CATEGORIES", classname),
