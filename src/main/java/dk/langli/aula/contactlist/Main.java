@@ -5,9 +5,14 @@ import static dk.langli.bahco.Bahco.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class Main {
 	private static final String TYPE = "Home";
@@ -30,6 +35,7 @@ public class Main {
 			"Phone 3 - Type",
 			"Phone 3 - Value"
 	);
+	private static final ObjectMapper json = new ObjectMapper();
 	
 	public static void main(String[] args) {
 		String username = args.length > 0 ? args[0] : null;
@@ -64,7 +70,7 @@ public class Main {
 					.flatMap(List::stream)
 					.filter(g -> g.getRole().equals("member"))
 					.collect(Collectors.toMap(g -> g.getId(), g -> g.getName()));
-			System.out.println(fields.stream().map(f -> s("\"%s\"", f)).collect(Collectors.joining(",")));
+//			System.out.println(fields.stream().map(f -> s("\"%s\"", f)).collect(Collectors.joining(",")));
 			groupIds.forEach((groupId, groupName) -> {
 				List<Contactlist> contactlists = aula.getGuardians(groupId);
 				contactlists.forEach(c -> convert(groupName, c));
@@ -74,13 +80,11 @@ public class Main {
 	}
 	
 	private static void convert(String classname, Contactlist contactlist) {
-		StringBuilder sb = new StringBuilder();
 		for(Child child: contactlist.getData()) {
 			for(Guardian guardian: child.getRelations()) {
-				sb.append(toCsv(classname, guardian, child)+NL);
+				System.out.println(toVcard(classname, guardian, child));
 			}
 		}
-		System.out.print(sb.toString());
 	}
 	
 	private static String toCsv(String classname, Guardian guardian, Child child) {
@@ -105,5 +109,37 @@ public class Main {
 		).stream()
 				.map(f -> f == null ? "" : s("\"%s\"", f))
 				.collect(Collectors.joining(","));
+	}
+	
+	private static String toVcard(String classname, Guardian guardian, Child child) {
+		JavaType mapType = TypeFactory.defaultInstance().constructMapLikeType(HashMap.class, String.class, Object.class);
+		Map<String, Object> a = json.convertValue(guardian.getAddress(), mapType);
+		a = flatten(a);
+		List<Map<String, String>> vcardMap = list(
+				entry("BEGIN", "VCARD"),
+				entry("VERSION", "3.0"),
+				entry("FN", s("%s %s", guardian.getFirstName(), guardian.getLastName())),
+				entry("N", s("%s;%s", guardian.getLastName(), guardian.getFirstName())),
+				entry("EMAIL;TYPE=INTERNET;TYPE=HOME", guardian.getEmail()),
+				entry("item1.EMAIL;TYPE=INTERNET", guardian.getAulaEmail()),
+				entry("item1.X-ABLabel", "Aula"),
+				entry("TEL;TYPE=HOME", guardian.getHomePhoneNumber()),
+				entry("TEL;TYPE=WORK", guardian.getWorkPhoneNumber()),
+				entry("TEL;TYPE=CELL", guardian.getMobilePhoneNumber()),
+				entry("ADR;TYPE=HOME", subst(";;${street};${postalDistrict};;${postalCode};DK;${street}\\n${postalCode} ${postalDistrict}\\nDK", a)),
+				entry("item4.TITLE", s("%s til %s", guardian.getRelation(), child.getFirstName())),
+				entry("X-ABRELATEDNAMES;TYPE=CHILD", s("%s %s", child.getFirstName(), child.getLastName())),
+				entry("NOTE", s("Forældre i %S", classname)),
+				entry("CATEGORIES", classname),
+				entry("END", "VCARD")
+		);
+		return vcardMap.stream()
+				.map(m -> m.entrySet().stream()
+						.filter(e -> e.getValue() != null)
+						.map(e -> s("%s:%s", e.getKey(), e.getValue()))
+						.collect(Collectors.toList()))
+				.filter(l -> !l.isEmpty())
+				.flatMap(List::stream)
+				.collect(Collectors.joining(NL));
 	}
 }
