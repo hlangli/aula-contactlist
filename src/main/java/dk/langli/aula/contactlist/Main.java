@@ -65,16 +65,15 @@ public class Main {
 					.build();
 			ProfileContext profileContext = aula.getProfileContext();
 			List<Institution> institutions = profileContext.getData().getInstitutions();
-			Map<String, String> groupIds = institutions.stream()
-					.map(Institution::getGroups)
-					.flatMap(List::stream)
+			institutions.forEach(institution -> {
+				institution.getGroups().stream()
 					.filter(g -> g.getRole().equals("member"))
-					.collect(Collectors.toMap(g -> g.getId(), g -> g.getName()));
-//			System.out.println(fields.stream().map(f -> s("\"%s\"", f)).collect(Collectors.joining(",")));
-			groupIds.forEach((groupId, groupName) -> {
-				List<Contactlist> contactlists = aula.getGuardians(groupId);
-				contactlists.forEach(c -> convert(groupName, c));
+					.forEach(group -> {
+						List<Contactlist> contactlists = aula.getGuardians(group.getId());
+						contactlists.forEach(c -> convert(group.getName(), c));
+					});
 			});
+//			System.out.println(fields.stream().map(f -> s("\"%s\"", f)).collect(Collectors.joining(",")));
 		});
 		System.exit(0);
 	}

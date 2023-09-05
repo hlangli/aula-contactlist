@@ -52,7 +52,7 @@ public class Aula {
 			response = wrap(() -> mapper().readValue(responseJson, Contactlist.class));
 			responses.add(response);
 		}
-		while(response != null && response.getData().size() > 0);
+		while(response != null && response.getData() != null && response.getData() != null && response.getData().size() > 0);
 		return responses;
 	}
 
