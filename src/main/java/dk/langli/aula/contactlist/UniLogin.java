@@ -40,7 +40,7 @@ public class UniLogin {
 		V retval = null;
 		WebDriver driver = this.driver.get();
 		if(driver == null) {
-			WebDriverManager.chromedriver().setup();
+			WebDriverManager.chromedriver().browserVersionDetectionCommand("google-chrome --version | cut -d ' ' -f 3");
 			ChromeOptions chromeOptions = new ChromeOptions();
 			chromeOptions.addArguments("--headless");
 			driver = new ChromeDriver(chromeOptions);
@@ -49,6 +49,8 @@ public class UniLogin {
 				driver.get("http://www.aula.dk");
 				options.timeouts().implicitlyWait(Duration.of(5, SECONDS));
 				driver.findElement(By.className("uni-login")).click();
+				options.timeouts().implicitlyWait(Duration.of(5, SECONDS));
+				driver.findElement(By.cssSelector("button[value='uni_idp']")).click();
 				options.timeouts().implicitlyWait(Duration.of(5, SECONDS));
 				driver.findElement(By.id("username")).sendKeys(username);
 				driver.findElement(By.className("button-primary")).click();

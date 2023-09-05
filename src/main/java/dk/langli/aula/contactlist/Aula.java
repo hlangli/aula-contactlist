@@ -23,8 +23,9 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class Aula {
-	private static final String PROFILE_CONTEXT_URL = "https://www.aula.dk/api/v15/?method=profiles.getProfileContext";
-	private static final String CONTACTLIST_URL = "https://www.aula.dk/api/v15/?method=profiles.getContactlist&groupId=${GROUP_ID}&filter=child&field=name&page=${PAGE}&order=asc";
+	public static final String AULA_API_VERSION = "v17";
+	private static final String PROFILE_CONTEXT_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getProfileContext";
+	private static final String CONTACTLIST_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getContactlist&groupId=${GROUP_ID}&filter=child&field=name&page=${PAGE}&order=asc";
 	private final WebDriver driver;
 	private ObjectMapper mapper;
 	
@@ -40,6 +41,7 @@ public class Aula {
 		List<Contactlist> responses = list();
 		AtomicInteger page = new AtomicInteger(0);
 		Supplier<String> url = () -> subst(CONTACTLIST_URL, map(
+				entry("AULA_API_VERSION", AULA_API_VERSION),
 				entry("GROUP_ID", groupId),
 				entry("PAGE", page.incrementAndGet())
 		));
@@ -57,7 +59,11 @@ public class Aula {
 	}
 
 	public ProfileContext getProfileContext() {
-		driver.get(PROFILE_CONTEXT_URL);
+		String url = subst(PROFILE_CONTEXT_URL, map(
+				entry("AULA_API_VERSION", AULA_API_VERSION)
+		));
+		System.out.println("GET "+url);
+		driver.get(url);
 		Options options = driver.manage();
 		options.timeouts().implicitlyWait(Duration.of(5, ChronoUnit.SECONDS));
 		String responseJson = driver.findElement(By.tagName("body")).getText();
