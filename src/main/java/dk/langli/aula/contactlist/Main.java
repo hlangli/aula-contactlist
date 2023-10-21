@@ -48,6 +48,7 @@ public class Main {
 			List<Institution> institutions = profileContext.getData().getInstitutions();
 			institutions.forEach(institution -> {
 				institution.getGroups().stream()
+					.sorted((a, b) -> a.getName().compareTo(b.getName()))
 					.filter(g -> g.getRole().equals("member"))
 					.forEach(group -> {
 						List<Contactlist> contactlists = aula.getGuardians(group.getId());
@@ -89,6 +90,7 @@ public class Main {
 				entry("X-ABRELATEDNAMES;TYPE=CHILD", s("%s %s", child.getFirstName(), child.getLastName())),
 				entry("NOTE", s("Forældre i %S", classname)),
 				entry("CATEGORIES", classname),
+//				entry("PHOTO;ENCODING=b;TYPE=JPEG", "iVBORw0KGgoAAAA ... bnwwAAAABJRU5ErkJggg=="),
 				entry("END", "VCARD")
 		);
 		return vcardMap.stream()
