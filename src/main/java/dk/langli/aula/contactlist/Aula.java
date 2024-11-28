@@ -23,7 +23,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class Aula {
-	public static final String AULA_API_VERSION = "v17";
+	public static final String AULA_API_VERSION = "v20";
 	private static final String PROFILE_CONTEXT_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getProfileContext";
 	private static final String CONTACTLIST_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getContactlist&groupId=${GROUP_ID}&filter=child&field=name&page=${PAGE}&order=asc";
 	private final WebDriver driver;
