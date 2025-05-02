@@ -52,7 +52,6 @@ public class Aula {
 			options.timeouts().implicitlyWait(Duration.of(5, ChronoUnit.SECONDS));
 			String responseJson = driver.findElement(By.tagName("body")).getText();
 			response = wrap(() -> mapper().readValue(responseJson, Contactlist.class));
-			
 			responses.add(response);
 		}
 		while(response != null && response.getData() != null && response.getData() != null && response.getData().size() > 0);
