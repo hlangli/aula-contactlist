@@ -19,16 +19,16 @@ public class Main {
 	private static final ObjectMapper json = new ObjectMapper();
 	
 	public static void main(String[] args) {
-		String username = args.length > 0 ? args[0] : null;
-		String password = args.length > 1 ? args[1] : null;
+		String username = nvl(System.getenv("UNILOGIN_USERNAME"), () -> args.length > 1 ? args[1] : null);
+		String password = nvl(System.getenv("UNILOGIN_PASSWORD"), () -> args.length > 1 ? args[1] : null);
 		if(username == null || password == null) {
 			try(BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))) {
 				if(username == null) {
-					System.err.print("AULA Username: ");
+					System.err.print("UNILogin Username: ");
 					username = wrap(stdin::readLine);
 				}
 				if(password == null) {
-					System.err.print("AULA Password: ");
+					System.err.print("UNILogin Password: ");
 					password = wrap(stdin::readLine);
 				}
 			}
@@ -51,7 +51,7 @@ public class Main {
 					.sorted((a, b) -> a.getName().compareTo(b.getName()))
 					.filter(g -> g.getRole().equals("member"))
 					.forEach(group -> {
-						List<Contactlist> contactlists = aula.getGuardians(group.getId());
+						List<Contactlist> contactlists = aula.getContactLists(group.getId());
 						contactlists.forEach(c -> convert(group.getName(), c));
 					});
 			});
@@ -90,7 +90,7 @@ public class Main {
 				entry("X-ABRELATEDNAMES;TYPE=CHILD", s("%s %s", child.getFirstName(), child.getLastName())),
 				entry("NOTE", s("Forældre i %S", classname)),
 				entry("CATEGORIES", classname),
-//				entry("PHOTO;ENCODING=b;TYPE=JPEG", "iVBORw0KGgoAAAA ... bnwwAAAABJRU5ErkJggg=="),
+//				entry("PHOTO;ENCODING=BASE64;TYPE=JPEG", "iVBORw0KGgoAAAA ... bnwwAAAABJRU5ErkJggg=="),
 				entry("END", "VCARD")
 		);
 		return vcardMap.stream()

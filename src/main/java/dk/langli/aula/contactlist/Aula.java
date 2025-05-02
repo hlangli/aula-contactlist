@@ -23,7 +23,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class Aula {
-	public static final String AULA_API_VERSION = "v17";
+	public static final String AULA_API_VERSION = "v21";
 	private static final String PROFILE_CONTEXT_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getProfileContext";
 	private static final String CONTACTLIST_URL = "https://www.aula.dk/api/${AULA_API_VERSION}/?method=profiles.getContactlist&groupId=${GROUP_ID}&filter=child&field=name&page=${PAGE}&order=asc";
 	private final WebDriver driver;
@@ -37,7 +37,7 @@ public class Aula {
 		return mapper;
 	}
 	
-	public List<Contactlist> getGuardians(String groupId) {
+	public List<Contactlist> getContactLists(String groupId) {
 		List<Contactlist> responses = list();
 		AtomicInteger page = new AtomicInteger(0);
 		Supplier<String> url = () -> subst(CONTACTLIST_URL, map(
@@ -52,6 +52,7 @@ public class Aula {
 			options.timeouts().implicitlyWait(Duration.of(5, ChronoUnit.SECONDS));
 			String responseJson = driver.findElement(By.tagName("body")).getText();
 			response = wrap(() -> mapper().readValue(responseJson, Contactlist.class));
+			
 			responses.add(response);
 		}
 		while(response != null && response.getData() != null && response.getData() != null && response.getData().size() > 0);

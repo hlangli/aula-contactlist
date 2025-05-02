@@ -26,7 +26,7 @@ public class Guardian {
 	private String mainGroup;
 	private String shortName;
 	private String profilePictureUrl;
-	private String profilePicture;
+	private ProfilePicture profilePicture;
 	private Boolean newInstitutionProfile;
 	private Boolean communicationBlocked;
 	private Boolean isPrimary;
